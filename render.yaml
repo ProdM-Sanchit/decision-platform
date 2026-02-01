@@ -45,7 +45,6 @@ databases:
   # PostgreSQL Database
   - name: decision-platform-db
     databaseName: decision_platform
-    user: postgres
     plan: starter
 
   # Redis
