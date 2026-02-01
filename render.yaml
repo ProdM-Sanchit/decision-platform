@@ -1,0 +1,53 @@
+services:
+  # API Service
+  - type: web
+    name: decision-platform-api
+    env: docker
+    dockerfilePath: ./backend/Dockerfile.prod
+    dockerContext: ./backend
+    healthCheckPath: /health
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: decision-platform-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: decision-platform-redis
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ENVIRONMENT
+        value: production
+      - key: DEBUG
+        value: false
+
+  # Worker Service
+  - type: worker
+    name: decision-platform-worker
+    env: docker
+    dockerfilePath: ./backend/Dockerfile.prod
+    dockerContext: ./backend
+    dockerCommand: celery -A app.worker worker --loglevel=info
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: decision-platform-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: decision-platform-redis
+          property: connectionString
+
+databases:
+  # PostgreSQL Database
+  - name: decision-platform-db
+    databaseName: decision_platform
+    user: postgres
+    plan: starter
+
+  # Redis
+  - name: decision-platform-redis
+    plan: starter
